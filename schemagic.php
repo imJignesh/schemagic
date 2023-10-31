@@ -67,7 +67,6 @@ register_deactivation_hook(__FILE__, 'deactivate_schemagic');
 require plugin_dir_path(__FILE__) . 'includes/class-schemagic.php';
 require plugin_dir_path(__FILE__) . 'admin/meta-revisions.php';
 require plugin_dir_path(__FILE__) . 'admin/class-options.php';
-// require plugin_dir_path(__FILE__) . 'public/custom_shortcode.php';
 
 
 /**
