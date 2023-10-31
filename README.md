@@ -1,10 +1,10 @@
 === Schema Magic ===
 Contributors: Jignesh Patel
-Donate link: [Donate to Support](https://imjignesh.com)
+Author link: [Website](https://imjignesh.com)
 Tags: schema, template, dynamic values
 Requires at least: 3.0.1
 Tested up to: 3.4
-Stable tag: 1.0
+Stable tag: 0.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -29,6 +29,7 @@ Schema Magic allows you to create structured data schemas for your content, maki
 = How do I create a schema template? =
 
 To create a schema template with Schema Magic, follow these steps:
+
 1. Install and activate the plugin.
 2. Go to the 'Schema Templates' menu in your WordPress dashboard.
 3. Click 'Add New' to create a new template.
@@ -46,7 +47,8 @@ To create a schema template with Schema Magic, follow these steps:
 == Changelog ==
 
 = 1.0 =
-* Initial release of Schema Magic.
+
+- Initial release of Schema Magic.
 
 == Upgrade Notice ==
 
@@ -69,17 +71,17 @@ Ordered list:
 
 Unordered list:
 
-* Enhance search engine visibility.
-* Boost click-through rates.
-* Stand out in search results.
+- Enhance search engine visibility.
+- Boost click-through rates.
+- Stand out in search results.
 
 Here's a link to [WordPress](http://wordpress.org/ "Your favorite software") and one to [Markdown's Syntax Documentation][markdown syntax].
 Titles are optional, naturally.
 
-[markdown syntax]: http://daringfireball.net/projects/markdown/syntax
-   "Markdown is what the parser uses to process much of the readme file"
+[markdown syntax]: http://daringfireball.net/projects/markdown/syntax "Markdown is what the parser uses to process much of the readme file"
 
 Markdown uses email-style notation for blockquotes, and I've been told:
-> Asterisks for *emphasis*. Double it up for **strong**.
+
+> Asterisks for _emphasis_. Double it up for **strong**.
 
 `<?php code(); // goes in backticks ?>`
