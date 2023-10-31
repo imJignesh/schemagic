@@ -1,0 +1,23 @@
+.query-builder .rules-group-container {
+    padding: 10px;
+    padding-bottom: 6px;
+    border: 1px solid #d3d3d3;
+    background: rgb(228 228 228 / 32%);
+}
+
+.meta-box-sortables select {
+    min-width: 120px;
+}
+
+
+#qb .btn-primary {
+    filter: saturate(0.4) opacity(0.3);
+}
+
+#qb .btn.active {
+    filter: none;
+}
+
+.float-right {
+    float: right;
+}
