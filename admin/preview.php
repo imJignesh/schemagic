@@ -101,6 +101,7 @@ if (isset($_GET['mode'])) {
             // Perform a WP Query using the provided 'id'
             $args = array(
                 'p' => $id,
+                'is_singular' => true,
             );
 
 

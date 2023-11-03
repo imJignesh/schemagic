@@ -83,103 +83,122 @@ class Schemagic_Public
 	 */
 	public function schema_query($display_data, $post)
 	{
-
+		// print_r($post);
 		$ruleset = json_decode($display_data, true);
 
 		if (!$ruleset) return;
 		$condition  = $ruleset['condition'];
 		$validation = array();
 		foreach ($ruleset['rules'] as $rule) {
-			if ('post_type' == $rule['id']) {
-				if (is_singular()) {
-					if ('equal' == $rule['operator']) {
-						$validation[] =	$rule['value'] == get_post_type($post);
+			if (is_a($post, 'WP_Post')) {
+				if ('post_type' == $rule['id']) {
+					if (is_singular()) {
+						echo get_post_type($post);
+						if ('equal' == $rule['operator']) {
+							$validation[] =	$rule['value'] == get_post_type($post);
+						} else {
+							$validation[] =	$rule['value'] != get_post_type($post);
+						}
 					} else {
-						$validation[] =	$rule['value'] != get_post_type($post);
+						$validation[] = null;
 					}
-				} else {
-					$validation[] = null;
 				}
-			}
 
-			if ('post_id' == $rule['id']) {
-				if ('equal' == $rule['operator']) {
-					$validation[] =	$rule['value'] == ($post->ID);
-				}
-				if ('not_equal' == $rule['operator']) {
-					$validation[] =	$rule['value'] != ($post->ID);
-				}
-				if ('in' == $rule['operator']) {
-					$validation[] =	 in_array($post->ID, explode(',', $rule['value']));
-				}
-				if ('not_in' == $rule['operator']) {
-					$validation[] = !in_array($post->ID, explode(',', $rule['value']));
-				}
-			}
-
-
-			if ('category' == $rule['id']) {
-				$category_ids = wp_get_post_categories($post->ID);
-
-				if ('in' == $rule['operator']) {
-					$validation[] =	 in_array($rule['value'], $category_ids);
-				}
-				if ('not_in' == $rule['operator']) {
-					$validation[] = !in_array($rule['value'], $category_ids);
-				}
-			}
-
-			if ('tag' == $rule['id']) {
-
-				$tag_ids = wp_get_post_tags($post->ID, array('fields' => 'ids'));
-
-
-				if ('equal' == $rule['operator']) {
-					$validation[] =	 in_array($rule['value'], $tag_ids);
-				}
-				if ('not_equal' == $rule['operator']) {
-					$validation[] = !in_array($rule['value'], $tag_ids);
-				}
-			}
-
-			if ('bctag' == $rule['id']) {
-				$term_ids = wp_get_post_terms($post->ID, 'bc_tag', array('fields' => 'ids'));
-				if ('equal' == $rule['operator']) {
-					$validation[] =	 in_array($rule['value'], $term_ids);
-				}
-				if ('not_equal' == $rule['operator']) {
-					$validation[] = !in_array($rule['value'], $term_ids);
-				}
-			}
-
-			if ('is_archive' == $rule['id']) {
-				$validation[] =	 is_post_type_archive($rule['value']);
-			}
-			if ('is_author' == $rule['id']) {
-				$validation[] =	 is_author();
-			}
-
-			if ('user_id' == $rule['id']) {
-				if (is_author()) {
-					$user_id = get_the_author_meta('ID');
+				if ('post_id' == $rule['id']) {
 
 					if ('equal' == $rule['operator']) {
-						$validation[] =	$rule['value'] == ($user_id);
+						$validation[] =	$rule['value'] == ($post->ID);
 					}
 					if ('not_equal' == $rule['operator']) {
-						$validation[] =	$rule['value'] != ($user_id);
+						$validation[] =	$rule['value'] != ($post->ID);
 					}
 					if ('in' == $rule['operator']) {
-						$validation[] =	 in_array($user_id, explode(',', $rule['value']));
+						$validation[] =	 in_array($post->ID, explode(',', $rule['value']));
 					}
 					if ('not_in' == $rule['operator']) {
-						$validation[] = !in_array($user_id, explode(',', $rule['value']));
+						$validation[] = !in_array($post->ID, explode(',', $rule['value']));
 					}
-				} else {
-					$validation[] = null;
+				}
+
+
+				if ('category' == $rule['id']) {
+					$category_ids = wp_get_post_categories($post->ID);
+
+					if ('in' == $rule['operator']) {
+						$validation[] =	 in_array($rule['value'], $category_ids);
+					}
+					if ('not_in' == $rule['operator']) {
+						$validation[] = !in_array($rule['value'], $category_ids);
+					}
+				}
+
+				if ('tag' == $rule['id']) {
+
+					$tag_ids = wp_get_post_tags($post->ID, array('fields' => 'ids'));
+
+
+					if ('equal' == $rule['operator']) {
+						$validation[] =	 in_array($rule['value'], $tag_ids);
+					}
+					if ('not_equal' == $rule['operator']) {
+						$validation[] = !in_array($rule['value'], $tag_ids);
+					}
+				}
+
+				if ('bctag' == $rule['id']) {
+					$term_ids = wp_get_post_terms($post->ID, 'bc_tag', array('fields' => 'ids'));
+					if ('equal' == $rule['operator']) {
+						$validation[] =	 in_array($rule['value'], $term_ids);
+					}
+					if ('not_equal' == $rule['operator']) {
+						$validation[] = !in_array($rule['value'], $term_ids);
+					}
+				}
+			} elseif (is_a($post, 'WP_Term')) {
+				if ('is_archive' == $rule['id']) {
+					switch ($rule['value']) {
+						case "category":
+							echo 'cat';
+							$validation[] =	 is_category();
+							break;
+						case "post_tag":
+							$validation[] =	 is_tag();
+							break;
+						case "post_format":
+							$validation[] =	  $rule['value'] == get_post_format() ? true : false;
+							break;
+						default:
+							$validation[] =	 is_tax($rule['value']);
+							break;
+					}
+					// echo $rule['value'];
+					// exit;
+				}
+			} elseif (is_a($post, 'WP_User')) {
+				if ('is_author' == $rule['id']) {
+					$validation[] =	 is_author();
+				}
+				if ('user_id' == $rule['id']) {
+					if (is_author()) {
+						$user_id = get_the_author_meta('ID');
+
+						if ('equal' == $rule['operator']) {
+							$validation[] =	$rule['value'] == ($user_id);
+						}
+						if ('not_equal' == $rule['operator']) {
+							$validation[] =	$rule['value'] != ($user_id);
+						}
+						if ('in' == $rule['operator']) {
+							$validation[] =	 in_array($user_id, explode(',', $rule['value']));
+						}
+						if ('not_in' == $rule['operator']) {
+							$validation[] = !in_array($user_id, explode(',', $rule['value']));
+						}
+					} else {
+						$validation[] = null;
+					}
 				}
 			}
-
 			if ('variable' == $rule['id']) {
 
 				global ${$rule['value']};
@@ -199,7 +218,9 @@ class Schemagic_Public
 					$validation[] = ${$rule['value']};
 			}
 		}
-
+		// print_r($post);
+		// print_r($validation);
+		if (count($validation) == 0) return false;
 		$allTrue = array_reduce($validation, function ($carry, $item) {
 			return $carry && $item;
 		}, true);
@@ -222,8 +243,9 @@ class Schemagic_Public
 	}
 	public function get_schema_templates()
 	{
-		global $post;
-		$currentpost = $post;
+
+		//global $post;
+		$currentpost = get_queried_object();
 		$args = array(
 			'post_type' => 'schemagic', // Replace with your custom post type name
 			'post_status' => 'publish', // Retrieve only published posts
@@ -239,22 +261,29 @@ class Schemagic_Public
 			$display_data = get_post_meta($post->ID, '_display_data', true);
 
 			// Do something with the custom meta values
-			//  echo "<h2>Title: " . get_the_title($currentpost) . "</h2>";
+			// echo "<h2>Title: " . get_the_title($currentpost) . "</h2>";
 			// echo "<div>Schema Template: " . ($schema_template) . "</div>";
-			//  echo "<div>Display Data: " . ($display_data) . "</div>";
-			json_decode($schema_template);
-			if (json_last_error() !== JSON_ERROR_NONE) {
+			// echo "<div>Display Data: " . ($display_data) . "</div>";
+
+			$pattern = "/[\(\[\{].*[\)\]\}]/";
+			if (!preg_match($pattern, $schema_template)) {
 				continue;
 			}
+			if ($display_data == '{"condition": "AND","rules": [{ empty: true }],"valid": true}') continue;
+			// echo PHP_EOL;
+			// echo $display_data;
+			// echo $currentpost;
 
 			if ($this->schema_query($display_data, $currentpost))
 				$schemadata[] = $schema_template ? $schema_template : "";
 			// Reset the post data
 
 		}
+		// print_r($schemadata);
 		wp_reset_postdata();
 		global $scmagicdata;
 		$scmagicdata =  join("", $schemadata);
+
 		$post = $currentpost;
 	}
 
@@ -289,7 +318,7 @@ class Schemagic_Public
 	public function print_schemagic()
 	{
 		$data = $this->preview_schematic();
-		if ($data != "null" && $data != "[]") echo '<script id="seo" type="application/ld+json">' . $data . '</script>';
+		if ($data != "null" && $data != "[]" && $data != "") echo '<script id="seo" type="application/ld+json">' . $data . '</script>';
 	}
 
 	public function removeEmptyKeys($array)
@@ -570,7 +599,9 @@ class Schemagic_Public
 				// return null;
 				if (function_exists($key_key)) {
 					$optionvalue =  call_user_func($key_key, $post);
-					return  $optionvalue;
+					return  $this->schemagic_replaceAll($optionvalue);
+				} else {
+					return "[]";
 				}
 				break;
 			case "template":
