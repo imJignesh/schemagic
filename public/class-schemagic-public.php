@@ -83,17 +83,20 @@ class Schemagic_Public
 	 */
 	public function schema_query($display_data, $post)
 	{
-		// print_r($post);
+		// exit;
 		$ruleset = json_decode($display_data, true);
 
 		if (!$ruleset) return;
 		$condition  = $ruleset['condition'];
 		$validation = array();
 		foreach ($ruleset['rules'] as $rule) {
+
+
+
 			if (is_a($post, 'WP_Post')) {
 				if ('post_type' == $rule['id']) {
 					if (is_singular()) {
-						echo get_post_type($post);
+						// echo get_post_type($post);
 						if ('equal' == $rule['operator']) {
 							$validation[] =	$rule['value'] == get_post_type($post);
 						} else {
@@ -155,11 +158,16 @@ class Schemagic_Public
 					}
 				}
 			} elseif (is_a($post, 'WP_Term')) {
+				// echo "cat -- " . is_category();
+				// exit;
+				// echo $post->taxonomy;
+				// print_r($post);
 				if ('is_archive' == $rule['id']) {
+
 					switch ($rule['value']) {
 						case "category":
-							echo 'cat';
-							$validation[] =	 is_category();
+
+							$validation[] =	 $post->taxonomy == 'category';
 							break;
 						case "post_tag":
 							$validation[] =	 is_tag();
@@ -259,23 +267,31 @@ class Schemagic_Public
 			// Get the custom meta values you created
 			$schema_template = get_post_meta($post->ID, '_schema_template', true);
 			$display_data = get_post_meta($post->ID, '_display_data', true);
+			$parse_data = get_post_meta($post->ID, '_parse_data', false);
 
 			// Do something with the custom meta values
 			// echo "<h2>Title: " . get_the_title($currentpost) . "</h2>";
 			// echo "<div>Schema Template: " . ($schema_template) . "</div>";
 			// echo "<div>Display Data: " . ($display_data) . "</div>";
 
-			$pattern = "/[\(\[\{].*[\)\]\}]/";
-			if (!preg_match($pattern, $schema_template)) {
+			// $pattern = "/[\(\[\{].*[\)\]\}]/";
+			// if (!preg_match($pattern, $schema_template)) {
+			// 	continue;
+			// }
+
+			if ($parse_data) {
 				continue;
 			}
-			if ($display_data == '{"condition": "AND","rules": [{ empty: true }],"valid": true}') continue;
-			// echo PHP_EOL;
-			// echo $display_data;
-			// echo $currentpost;
 
-			if ($this->schema_query($display_data, $currentpost))
+
+			if ($display_data == '{"condition": "AND","rules": [{ empty: true }],"valid": true}') continue;
+
+
+			// echo $schema_template;
+			if ($this->schema_query($display_data, $currentpost)) {
+
 				$schemadata[] = $schema_template ? $schema_template : "";
+			}
 			// Reset the post data
 
 		}
@@ -409,7 +425,7 @@ class Schemagic_Public
 				break;
 
 			case "hash":
-				exit;
+				// exit;
 				$string = $value + 'sw48w9'; // Replace with the string you want to hash
 				$hash = md5($string);
 
@@ -574,7 +590,9 @@ class Schemagic_Public
 					return $this->schema_filter($returnvalue, $key_filter);
 				} else {
 					$user_id = get_post_field('post_author', $post->ID);
-					$returnvalue = get_user_meta($user_id, $key_key, true) ? (get_user_meta($user_id, $key_key, true)) : "";
+					// $returnvalue = get_user_meta($user_id, $key_key, true) ? (get_user_meta($user_id, $key_key, true)) : "";
+					$returnvalue = str_replace('"', "", get_user_meta($user_id, $key_key, true) ? (get_user_meta($user_id, $key_key, true)) : "");
+
 					return $this->schema_filter($returnvalue, $key_filter);
 				}
 				break;
@@ -842,10 +860,10 @@ class Schemagic_Public
 
 					$schema[] = [
 						"@type" => "Question",
-						"name" => $faqlist['question'],
+						"name" => strip_tags($faqlist['question']),
 						"acceptedAnswer" => [
 							"@type" => "Answer",
-							"text" => $faqlist['answer']
+							"text" => preg_replace("/\r|\n/", '', $faqlist['answer'])
 						]
 					];
 				}

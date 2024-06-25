@@ -260,6 +260,7 @@ class Schemagic_Admin
 			<textarea name="schemagic_template_ace" id="schemagic_template_ace" style="display: none;"><?php echo esc_textarea($schema_template); ?></textarea>
 			<pre id="editor"><?php echo esc_textarea($schema_template); ?></pre>
 		</div>
+
 		<script>
 			var editor = ace.edit("editor");
 			// editor.setTheme("ace/theme/twilight");
@@ -449,6 +450,7 @@ class Schemagic_Admin
 
 		// Retrieve the current JSON data from the post meta
 		$display_data = get_post_meta($post->ID, '_display_data', true);
+		$schemagic_parse = get_post_meta($post->ID, '_parse_data', false);
 
 		$display_data = $display_data == "" ? '{"condition": "AND","rules": [{ empty: true }],"valid": true}' : $display_data;
 
@@ -620,6 +622,15 @@ class Schemagic_Admin
 				});
 			})
 		</script>
+		<br /><br />
+		<div class="form-check">
+			<input class="form-check-input" type="checkbox" name="schemagic_parse_data" id="schemagic_parse_data" value="true" <?php echo $schemagic_parse == true  ? 'checked' : '' ?> />
+			<label for="schemagic_parse_data" class="form-check-label">
+				Do not parse in schema
+			</label>
+		</div>
+
+
 	<?php
 	}
 
@@ -643,6 +654,11 @@ class Schemagic_Admin
 			$new_display_data = wp_unslash($_POST['schemagic_display_data']);
 			// Update the display data field
 			update_post_meta($post_id, '_display_data', $new_display_data);
+		}
+		if (isset($_POST['schemagic_parse_data'])) {
+			update_post_meta($post_id, '_parse_data', true);
+		} else {
+			delete_post_meta($post_id, '_parse_data');
 		}
 	}
 
@@ -776,11 +792,16 @@ class Schemagic_Admin
 		if ($column_name === 'shortcode_column') {
 
 			$display_data = get_post_meta($post_id, '_display_data', true);
-			$ruleset = json_decode($display_data, true);
-			if ($ruleset) return;
-
-			// Display a textbox with the shortcode value
-			echo '<input type="text" value="#template.' . esc_attr($post_id) . '#" readonly="readonly" style="width: 100%;" onclick="this.select()" />';
+			$parse_data = get_post_meta($post_id, '_parse_data', false);
+			if (true == $parse_data) {
+				echo '<input type="text" value="[schemagic id=' . esc_attr($post_id) . ']" readonly="readonly" style="width: 100%;" onclick="this.select()" />';
+				return;
+			}
 		}
+		$ruleset = json_decode($display_data, true);
+		if ($ruleset) return;
+
+		// Display a textbox with the shortcode value
+		echo '<input type="text" value="#template.' . esc_attr($post_id) . '#" readonly="readonly" style="width: 100%;" onclick="this.select()" />';
 	}
 }
